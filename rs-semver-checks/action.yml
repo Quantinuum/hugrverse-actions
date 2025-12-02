@@ -16,7 +16,7 @@ runs:
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.merge_commit_sha || github.event.merge_group.head.sha }}
-        path: PR_BRANCH
+        path: /tmp/PR_BRANCH
         fetch-depth: 2
 
     - name: Define baseline commit
@@ -24,7 +24,7 @@ runs:
       shell: bash
       run: |
         # Use the baseline input if present, otherwise use the merge commit's first parent.
-        cd PR_BRANCH
+        cd /tmp/PR_BRANCH
         PR_HEAD_SHA=$(git rev-parse "HEAD")
         if [ -z "$BASELINE_INPUT" ]; then
           # Compute the actual sha of the baseline commit.
@@ -41,7 +41,7 @@ runs:
       uses: actions/checkout@v4
       with:
         ref: ${{ steps.define-baseline.outputs.BASELINE_REV }}
-        path: BASELINE_BRANCH
+        path: /tmp/BASELINE_BRANCH
 
     - uses: mozilla-actions/sccache-action@v0.0.9
     - name: Install stable toolchain
@@ -58,7 +58,7 @@ runs:
       id: build
       shell: bash
       run: |
-        cd PR_BRANCH
+        cd /tmp/PR_BRANCH
         cargo check --all-targets
 
     # Run cargo-semver-checks against the PR's target branch.
@@ -69,11 +69,11 @@ runs:
         # Don't fail the workflow when semver-checks returns a non-zero exit code.
         set +e
 
-        cd PR_BRANCH
-        cargo semver-checks --color never --baseline-root ../BASELINE_BRANCH --release-type minor > diagnostic.txt 2>&1
+        cd /tmp/PR_BRANCH
+        cargo semver-checks --color never --baseline-root /tmp/BASELINE_BRANCH --release-type minor > diagnostic.txt 2>&1
         exit_code=$?
 
-        if grep -qE "not found in \.\./BASELINE_BRANCH" diagnostic.txt; then
+        if grep -qE "not found in /tmp/BASELINE_BRANCH" diagnostic.txt; then
           echo "new_package=true" >> $GITHUB_OUTPUT
           echo "breaking=false" >> $GITHUB_OUTPUT
         else
@@ -179,7 +179,7 @@ runs:
     - name: Remove the checked out directories
       shell: bash
       run: |
-        rm -rf PR_BRANCH BASELINE_BRANCH
+        rm -rf /tmp/PR_BRANCH /tmp/BASELINE_BRANCH
 
     - name: Fail if there are undeclared breaking changes
       if: ${{ steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'false' && steps.check-changes.outputs.new_package == 'false' }}
