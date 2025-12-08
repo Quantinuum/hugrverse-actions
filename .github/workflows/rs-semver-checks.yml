@@ -7,7 +7,7 @@ on:
       baseline-rev:
         description: "The base rev to compare against. Defaults to the PR's base branch."
         type: string
-        required: false 
+        required: false
       apt-dependencies:
         description: "A list of space-separated apt dependencies to install before running."
         type: string
@@ -15,7 +15,7 @@ on:
         required: false
     secrets:
       GITHUB_PAT:
-        description: 'The github token for the user that will post comments.'
+        description: "The github token for the user that will post comments."
         required: true
 
 env:
@@ -37,7 +37,7 @@ jobs:
           sudo apt-get install -y $APT_DEPENDENCIES
         env:
           APT_DEPENDENCIES: ${{ inputs.apt-dependencies }}
-      - uses: CQCL/hugrverse-actions/rs-semver-checks@main
+      - uses: quantinuum/hugrverse-actions/rs-semver-checks@main
         with:
           baseline-rev: ${{ inputs.baseline-rev }}
           token: ${{ secrets.GITHUB_PAT }}

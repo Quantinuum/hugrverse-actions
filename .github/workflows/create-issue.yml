@@ -3,34 +3,34 @@ on:
   workflow_call:
     secrets:
       GITHUB_PAT:
-        description: 'The github token used to create the issue.'
+        description: "The github token used to create the issue."
         required: true
-    inputs: 
+    inputs:
       repository:
-        description: 'The owner and repository name to create the issue on. For example, "CQCL/hugrverse-actions". Defaults to the current repository.'
+        description: 'The owner and repository name to create the issue on. For example, "quantinuum/hugrverse-actions". Defaults to the current repository.'
         type: string
       title:
-        description: 'The title of the issue.'
+        description: "The title of the issue."
         required: true
         type: string
       body:
-        description: 'The body of the issue.'
+        description: "The body of the issue."
         required: true
         type: string
       unique-label:
-        description: 'A label to check if the issue already exists. If the label is present, the issue will not be created.'
+        description: "A label to check if the issue already exists. If the label is present, the issue will not be created."
         required: true
         type: string
       other-labels:
-        description: 'A list of space-separated labels to add to the issue.'
+        description: "A list of space-separated labels to add to the issue."
         required: false
         type: string
     outputs:
       created:
-        description: 'Whether the issue was created. Returns false if the issue already exists.'
+        description: "Whether the issue was created. Returns false if the issue already exists."
         value: ${{ jobs.post-issue.outputs.make-issue }}
       issue-number:
-        description: 'The number of the created issue. If the issue already exists, this will be the number of the existing issue.'
+        description: "The number of the created issue. If the issue already exists, this will be the number of the existing issue."
         value: ${{ jobs.post-issue.outputs.issue-number }}
 
 jobs:
