@@ -5,12 +5,12 @@ on:
   workflow_call:
     inputs:
       project-url:
-        description: 'The URL of the project board to add the issue to'
+        description: "The URL of the project board to add the issue to"
         required: true
         type: string
     secrets:
       GITHUB_PAT:
-        description: 'The github token with permissions to add issues to the project'
+        description: "The github token with permissions to add issues to the project"
         required: true
   # The caller should use these triggers on their workflow file
   issues:
@@ -18,14 +18,14 @@ on:
       - opened
 
 env:
-    # We use this workflow locally for hugrverse-actions issues.
-    # This variable detects whether we are running the workflow locally or via an external workflow_call.
-    #
-    # Github's terrible version of a 'ternary operator'
-    # https://github.com/actions/runner/issues/409#issuecomment-752775072
-    PROJECT_URL: ${{ github.repository == 'CQCL/hugrverse-actions' && 'https://github.com/orgs/quantinuum-dev/projects/10' || inputs.project-url }}
-    # We use a ADD_TO_PROJECT_PAT secret locally.
-    GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.ADD_TO_PROJECT_PAT }}
+  # We use this workflow locally for hugrverse-actions issues.
+  # This variable detects whether we are running the workflow locally or via an external workflow_call.
+  #
+  # Github's terrible version of a 'ternary operator'
+  # https://github.com/actions/runner/issues/409#issuecomment-752775072
+  PROJECT_URL: ${{ github.repository == 'quantinuum/hugrverse-actions' && 'https://github.com/orgs/quantinuum-dev/projects/10' || inputs.project-url }}
+  # We use a ADD_TO_PROJECT_PAT secret locally.
+  GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.ADD_TO_PROJECT_PAT }}
 
 jobs:
   add-to-project:
