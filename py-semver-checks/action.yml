@@ -2,12 +2,15 @@ name: Python semver-checks 🐍
 description: Action running Python semver-checks
 
 inputs:
-  baseline-rev:
-    description: "The base rev to compare against. Defaults to the PR's base branch."
-    required: false
+  packages:
+    description: "A string containing a space-separated list of packages to check for breaking changes."
+    required: true
   token:
     description: "A Github PAT to post comments."
     required: true
+  baseline-rev:
+    description: "The base rev to compare against. Defaults to the PR's base branch."
+    required: false
 
 runs:
   using: composite
