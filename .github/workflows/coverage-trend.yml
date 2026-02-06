@@ -23,7 +23,7 @@ jobs:
       # Downloads the artifact from the most recent successful run
       - name: Download commit sha of the most recent successful run
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v12
+        uses: dawidd6/action-download-artifact@v14
         with:
           name: head-sha.txt
           if_no_artifact_found: ignore
