@@ -23,9 +23,9 @@ env:
   #
   # Github's terrible version of a 'ternary operator'
   # https://github.com/actions/runner/issues/409#issuecomment-752775072
-  PROJECT_URL: ${{ github.repository == 'quantinuum/hugrverse-actions' && 'https://github.com/orgs/quantinuum-dev/projects/10' || inputs.project-url }}
-  # We use a ADD_TO_PROJECT_PAT secret locally.
-  GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.ADD_TO_PROJECT_PAT }}
+  PROJECT_URL: ${{ github.repository == 'quantinuum/hugrverse-actions' && 'https://github.com/orgs/quantinuum/projects/23' || inputs.project-url }}
+  # We use a HUGRBOT_PAT secret locally.
+  GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.HUGRBOT_PAT }}
 
 jobs:
   add-to-project:
