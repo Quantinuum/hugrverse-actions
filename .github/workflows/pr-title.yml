@@ -125,7 +125,7 @@ jobs:
       - name: Require "BREAKING CHANGE:" footer for breaking changes
         id: breaking-comment
         if: ${{ github.event_name == 'pull_request_target' && steps.breaking.outputs.breaking == 'true' && steps.breaking.outputs.has_breaking_footer == 'false' }}
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: pr-title-lint-error
           message: |
@@ -156,7 +156,7 @@ jobs:
       - name: Post comment if the PR is an RFC
         id: rfc-tag-comment
         if: always() && (github.event_name == 'pull_request_target') && (steps.rfc-tag.outputs.rfc == 'true')
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: pr-title-lint-error
           message: |
@@ -169,7 +169,7 @@ jobs:
         run: exit 1
 
       - name: Post a comment if the PR badly formatted
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         # When the previous steps fails, the workflow would stop. By adding this
         # condition you can continue the execution with the populated error message.
         if: always() && github.event_name == 'pull_request_target'  && (steps.lint_pr_title.outputs.error_message != null)
@@ -210,7 +210,7 @@ jobs:
       # Delete previous comments when the issues have been resolved
       # This step doesn't run if any of the previous checks fails.
       - name: Delete previous comments
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: github.event_name == 'pull_request_target'
         with:
           header: pr-title-lint-error
