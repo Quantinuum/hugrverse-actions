@@ -49,7 +49,7 @@ jobs:
           env.PROTECTED_BRANCH != env.RELEASE_BRANCH &&
           steps.breaking.outputs.breaking == 'true' && 
           github.event.pull_request.base.ref == env.PROTECTED_BRANCH
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: breaking-change-to-main
           message: |
@@ -73,7 +73,7 @@ jobs:
 
       # only make it to this point if we have not failed above
       - name: Delete comment when fixed
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: breaking-change-to-main
           delete: true
