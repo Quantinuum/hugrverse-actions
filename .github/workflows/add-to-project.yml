@@ -42,7 +42,7 @@ jobs:
         run: |
           echo "The GITHUB_PAT input is required."
           exit 1
-      - uses: actions/add-to-project@v1.0.2
+      - uses: actions/add-to-project@v2.0.0
         with:
           project-url: ${{ env.PROJECT_URL }}
           github-token: ${{ env.GITHUB_TOKEN }}
