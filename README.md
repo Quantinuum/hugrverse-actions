@@ -253,13 +253,15 @@ The fine-grained `GITHUB_PAT` secret must include the following permissions:
 Runs [`griffe`](https://mkdocstrings.github.io/griffe/) on a PR against the base branch,
 and reports back if there are breaking changes in the Python API.
 
-If the PR has a breaking change, posts a comment with a summary of the changes.
+If `token` is supplied, it also tries to post a sticky pull request comment with
+a summary of the changes. Otherwise, it only writes a job summary that can be
+consulted in the "Checks" tab of the pull request.
 
 ### Usage
 ```yaml
 name: Python Semver Checks
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - main
 
@@ -267,8 +269,9 @@ jobs:
   semver-checks:
     name: Python semver-checks 🐍
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: quantinuum/hugrverse-actions/py-semver-checks@main
         with:
@@ -279,14 +282,20 @@ jobs:
 
 ### Token Permissions
 
-The fine-grained `GITHUB_PAT` secret must include the following permissions:
+The `token` input is optional. If it is omitted, the action skips sticky pull
+request comments and only writes the job summary.
+
+When a token is supplied, it must include the following permissions:
 
 | Permission | Access |
 | --- | --- |
 | Pull requests | Read and write |
 
-Note that repository secrets are not available to forked repositories on `pull_request` events.
-To run this workflow on pull requests from forks, ensure the action is triggered by a `pull_request_target` event instead.
+Sticky pull request comments are best-effort and do not fail the semver check if
+the token cannot write comments. Note that repository secrets are not available
+to forked repositories on `pull_request` events, so forked pull requests should
+omit the token and rely on the job summary. Do not use `pull_request_target` for
+this action unless the pull request code being checked out and run is trusted.
 
 ## [`rs-semver-checks`](https://github.com/quantinuum/hugrverse-actions/blob/main/.github/workflows/rs-semver-checks.yml)
 

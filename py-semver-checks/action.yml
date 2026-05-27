@@ -6,8 +6,8 @@ inputs:
     description: "A string containing a space-separated list of packages to check for breaking changes."
     required: true
   token:
-    description: "A Github PAT to post comments."
-    required: true
+    description: "A GitHub PAT or token to post comments. If unset, comments are skipped."
+    required: false
   baseline-rev:
     description: "The base rev to compare against. Defaults to the PR's base branch."
     required: false
@@ -100,10 +100,47 @@ runs:
         echo "breaking: ${{ steps.check-changes.outputs.breaking }}"
         echo "breaking-pr: ${{ steps.breaking-pr.outputs.breaking }}"
 
+    - name: Write job summary
+      shell: bash
+      run: |
+        {
+          echo "## Python semver checks"
+          echo
+
+          if [ "$BREAKING" = "true" ] && [ "$BREAKING_PR" = "true" ]; then
+            echo "This PR contains breaking changes to the public Python API and is marked as breaking."
+          elif [ "$BREAKING" = "true" ]; then
+            echo "This PR contains breaking changes to the public Python API, but is not marked as breaking."
+            echo "Please deprecate the old API instead, if possible, or mark the PR with a \`!\` to indicate a breaking change."
+          else
+            echo "No breaking public Python API changes were detected."
+          fi
+
+          if [ -z "$COMMENT_TOKEN" ]; then
+            echo
+            echo "No comment token was supplied, so sticky pull request comments were skipped."
+          fi
+
+          echo
+          echo "<details>"
+          echo "<summary>Breaking changes summary</summary>"
+          echo
+          echo '```'
+          sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' diagnostic.txt
+          echo '```'
+          echo
+          echo "</details>"
+        } >> "$GITHUB_STEP_SUMMARY"
+      env:
+        BREAKING: ${{ steps.check-changes.outputs.breaking }}
+        BREAKING_PR: ${{ steps.breaking-pr.outputs.breaking }}
+        COMMENT_TOKEN: ${{ inputs.token }}
+
     # Post a diagnostics comment if there are breaking changes and the PR has been marked as breaking.
     - name: Post a comment about the breaking changes. PR marked as breaking.
-      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'true' }}
+      if: ${{ inputs.token != '' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'true' }}
       uses: marocchino/sticky-pull-request-comment@v2
+      continue-on-error: true
       with:
         header: py-semver-checks
         message: |
@@ -121,8 +158,9 @@ runs:
 
     # Post a help comment if there are breaking changes, and the PR hasn't been marked as breaking.
     - name: Post a comment about the breaking changes. PR *not* marked as breaking.
-      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'false' }}
+      if: ${{ inputs.token != '' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'false' }}
       uses: marocchino/sticky-pull-request-comment@v2
+      continue-on-error: true
       with:
         header: py-semver-checks
         message: |
@@ -148,7 +186,8 @@ runs:
     # This step doesn't run if any of the previous checks fails.
     - name: Delete previous comments
       uses: marocchino/sticky-pull-request-comment@v2
-      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'false' }}
+      if: ${{ inputs.token != '' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'false' }}
+      continue-on-error: true
       with:
         header: py-semver-checks
         delete: true
