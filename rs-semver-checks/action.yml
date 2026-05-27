@@ -6,8 +6,8 @@ inputs:
     description: "The base rev to compare against. Defaults to the PR's base branch."
     required: false
   token:
-    description: "A Github PAT to post comments."
-    required: true
+    description: "A GitHub PAT or token to post comments. If unset, comments are skipped."
+    required: false
 
 runs:
   using: composite
@@ -117,10 +117,51 @@ runs:
         echo "breaking-pr: ${{ steps.breaking-pr.outputs.breaking }}"
         echo "new_package: ${{ steps.check-changes.outputs.new_package }}"
 
+    - name: Write job summary
+      shell: bash
+      run: |
+        {
+          echo "## Rust semver checks"
+          echo
+
+          if [ "$NEW_PACKAGE" = "true" ]; then
+            echo "A new Rust package was added to the workspace and is not present in the baseline."
+            echo "Skipping semver checks."
+          elif [ "$BREAKING" = "true" ] && [ "$BREAKING_PR" = "true" ]; then
+            echo "This PR contains breaking changes to the public Rust API and is marked as breaking."
+          elif [ "$BREAKING" = "true" ]; then
+            echo "This PR contains breaking changes to the public Rust API, but is not marked as breaking."
+            echo "Please deprecate the old API instead, if possible, or mark the PR with a \`!\` to indicate a breaking change."
+          else
+            echo "No breaking public Rust API changes were detected."
+          fi
+
+          if [ -z "$COMMENT_TOKEN" ]; then
+            echo
+            echo "No comment token was supplied, so sticky pull request comments were skipped."
+          fi
+
+          echo
+          echo "<details>"
+          echo "<summary>cargo-semver-checks output</summary>"
+          echo
+          echo '```'
+          cat PR_BRANCH/diagnostic.txt
+          echo '```'
+          echo
+          echo "</details>"
+        } >> "$GITHUB_STEP_SUMMARY"
+      env:
+        BREAKING: ${{ steps.check-changes.outputs.breaking }}
+        BREAKING_PR: ${{ steps.breaking-pr.outputs.breaking }}
+        COMMENT_TOKEN: ${{ inputs.token }}
+        NEW_PACKAGE: ${{ steps.check-changes.outputs.new_package }}
+
     # Post a message if a new package is detected (not present in baseline)
     - name: New package detected; skipping semver checks
-      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.new_package == 'true' }}
+      if: ${{ inputs.token != '' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.new_package == 'true' }}
       uses: marocchino/sticky-pull-request-comment@v2
+      continue-on-error: true
       with:
         header: rs-semver-checks
         message: |
@@ -139,8 +180,9 @@ runs:
 
     # Post a diagnostics comment if there are breaking changes and the PR has been marked as breaking.
     - name: Post a comment about the breaking changes. PR marked as breaking.
-      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'true' }}
+      if: ${{ inputs.token != '' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'true' }}
       uses: marocchino/sticky-pull-request-comment@v2
+      continue-on-error: true
       with:
         header: rs-semver-checks
         message: |
@@ -158,8 +200,9 @@ runs:
 
     # Post a help comment if there are breaking changes, and the PR hasn't been marked as breaking.
     - name: Post a comment about the breaking changes. PR *not* marked as breaking.
-      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'false' }}
+      if: ${{ inputs.token != '' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'true' && steps.breaking-pr.outputs.breaking == 'false' }}
       uses: marocchino/sticky-pull-request-comment@v2
+      continue-on-error: true
       with:
         header: rs-semver-checks
         message: |
@@ -190,7 +233,8 @@ runs:
     # This step doesn't run if any of the previous checks fails.
     - name: Delete previous comments
       uses: marocchino/sticky-pull-request-comment@v2
-      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'false' && steps.check-changes.outputs.new_package == 'false' }}
+      if: ${{ inputs.token != '' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.check-changes.outputs.breaking == 'false' && steps.check-changes.outputs.new_package == 'false' }}
+      continue-on-error: true
       with:
         header: rs-semver-checks
         delete: true
