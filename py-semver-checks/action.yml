@@ -65,6 +65,7 @@ runs:
 
         {
           echo 'semver_checks_diagnostic<<EOF'
+          # Cleanup ANSI escape sequences.
           cat diagnostic.txt  | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'
           echo
           echo EOF
@@ -126,7 +127,7 @@ runs:
           echo "<summary>Breaking changes summary</summary>"
           echo
           echo '```'
-          sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' diagnostic.txt
+          printf '%s\n' "$DIAGNOSTIC"
           echo '```'
           echo
           echo "</details>"
@@ -135,6 +136,7 @@ runs:
         BREAKING: ${{ steps.check-changes.outputs.breaking }}
         BREAKING_PR: ${{ steps.breaking-pr.outputs.breaking }}
         COMMENT_TOKEN: ${{ inputs.token }}
+        DIAGNOSTIC: ${{ steps.check-changes.outputs.semver_checks_diagnostic }}
 
     # Post a diagnostics comment if there are breaking changes and the PR has been marked as breaking.
     - name: Post a comment about the breaking changes. PR marked as breaking.
