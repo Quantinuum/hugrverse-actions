@@ -16,7 +16,7 @@ runs:
   using: composite
   steps:
     - name: Checkout PR's head
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ github.event.pull_request.head.merge_commit_sha || github.event.merge_group.head.sha }}
         # This will fetch the baseline commit, defined as the first parent of the merge commit.

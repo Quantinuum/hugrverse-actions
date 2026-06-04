@@ -13,7 +13,7 @@ runs:
   using: composite
   steps:
     - name: Checkout PR's head
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ github.event.pull_request.merge_commit_sha || github.event.merge_group.head.sha }}
         path: PR_BRANCH
@@ -38,7 +38,7 @@ runs:
         BASELINE_INPUT: ${{ inputs.baseline-rev }}
 
     - name: Checkout baseline
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ steps.define-baseline.outputs.BASELINE_REV }}
         path: BASELINE_BRANCH
