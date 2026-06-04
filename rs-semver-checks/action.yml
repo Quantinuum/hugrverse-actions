@@ -43,7 +43,7 @@ runs:
         ref: ${{ steps.define-baseline.outputs.BASELINE_REV }}
         path: BASELINE_BRANCH
 
-    - uses: mozilla-actions/sccache-action@v0.0.9
+    - uses: mozilla-actions/sccache-action@v0.0.10
     - name: Install stable toolchain
       uses: dtolnay/rust-toolchain@stable
 
