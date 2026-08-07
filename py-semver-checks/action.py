@@ -31,7 +31,15 @@ if __name__ == "__main__":
             package.name, search_paths=[package.parent], ref=args.baseline
         )
         head_package = load_git(package.name, search_paths=[package.parent], ref="HEAD")
-        breaking_changes += list(find_breaking_changes(baseline_package, head_package))
+        package_breaking_changes = find_breaking_changes(baseline_package, head_package)
+
+        # Add the detected breaking changes to the list, excluding any changes to the package `__version__` attribute.
+        package_version_path = f"{baseline_package.path}.__version__"
+        breaking_changes += [
+            change
+            for change in package_breaking_changes
+            if change.obj.path != package_version_path
+        ]
 
     for change in breaking_changes:
         print(change.explain(style=ExplanationStyle.VERBOSE))
