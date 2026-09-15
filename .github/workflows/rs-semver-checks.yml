@@ -15,8 +15,11 @@ on:
         required: false
     secrets:
       GITHUB_PAT:
-        description: "The github token for the user that will post comments."
-        required: true
+        description: "The GitHub token for the user that will post comments."
+        required: false
+
+permissions:
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -27,8 +30,6 @@ jobs:
   semver-checks:
     name: Rust semver-checks 🦀
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
     steps:
       - name: Install apt dependencies
         if: ${{ inputs.apt-dependencies != '' }}
