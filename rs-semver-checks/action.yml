@@ -8,6 +8,9 @@ inputs:
   token:
     description: "A GitHub PAT or token to post comments. If unset, comments are skipped."
     required: false
+  args:
+    description: "Additional arguments to pass to cargo-semver-checks."
+    required: false
 
 runs:
   using: composite
@@ -77,7 +80,7 @@ runs:
         set +e
 
         cd PR_BRANCH
-        cargo semver-checks --color never --baseline-root ../BASELINE_BRANCH --release-type minor > diagnostic.txt 2>&1
+        cargo semver-checks --color never --baseline-root ../BASELINE_BRANCH --release-type minor ${{ inputs.args }} > diagnostic.txt 2>&1
         exit_code=$?
 
         if grep -qE "not found in \.\./BASELINE_BRANCH" diagnostic.txt; then

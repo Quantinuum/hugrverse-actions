@@ -320,6 +320,7 @@ jobs:
       - uses: quantinuum/hugrverse-actions/rs-semver-checks@main
         with:
           baseline-rev: main  # If not present, defaults to base branch of the PR
+          args: --all-features # Optional, additional arguments to pass to cargo-semver-checks
           token: ${{ secrets.GITHUB_PAT }}
 ```
 
