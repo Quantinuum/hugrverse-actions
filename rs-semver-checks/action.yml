@@ -22,10 +22,10 @@ runs:
         echo "This action must not run from pull_request_target."
         exit 1
 
-    - name: Checkout PR's head
+    - name: Checkout triggering candidate
       uses: actions/checkout@v6
       with:
-        ref: ${{ github.event.pull_request.merge_commit_sha || github.event.merge_group.head.sha }}
+        ref: ${{ github.sha }}
         path: PR_BRANCH
         fetch-depth: 2
 
@@ -38,7 +38,7 @@ runs:
         PR_HEAD_SHA=$(git rev-parse "HEAD")
         if [ -z "$BASELINE_INPUT" ]; then
           # Compute the actual sha of the baseline commit.
-          BASELINE_REV=$(git rev-parse "HEAD^1")
+          BASELINE_REV=$(git rev-parse --verify "HEAD^1")
         else
           BASELINE_REV="$BASELINE_INPUT"
         fi
